@@ -1,0 +1,57 @@
+<!DOCTYPE>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>jQuery Router Demos</title>
+    <script type="text/javascript" src="../tests/jquery.js"></script>
+    <script type="text/javascript" src="../src/jquery.router.js"></script>
+    <script type="text/javascript">
+      $(function() {
+        var result = $('#result');
+        $.route(/^test\/$/).get(function(request) {
+          result.text('test: ' + $.print(request.params));
+        });
+        $.route(/^settings\/$/).get(function(request) {
+          result.text('settings: ' + $.print(request.params));
+        });
+        $.route(/^quit\/$/).get(function(request) {
+          result.text('quit: ' + $.print(request.params));
+        });
+        $.route(/^book\/(.*)\/note\/(.*)$/).get(function(request, book_id) {
+          result.text('book id: ' + book_id + ': ' + $.print(request.params));
+        });
+        $.route(/^book\/(.*)\/$/).get(function(request, book_id, note_id) {
+          result.text('book id: ' + book_id + '; note id: ' + note_id + '; params: ' + $.print(request.params));
+        });
+        $.print = function(dict) {
+          var str = '{ ';
+          for (var key in dict) {
+            str += '"' + key + '": "' + dict[key] + '", ';
+          }
+          str += '}';
+          return str;
+        }
+      })
+    </script>
+  </head>
+  <body>
+    <h3>Static paths</h3>
+    <a href="#test/">Test</a><br />
+    <a href="#settings/">Settings</a><br />
+    <a href="#quit/">Quit</a><br />
+    <hr />
+    <h3>Dynamic paths</h3>
+    <a href="#book/1/">Book1</a><br />
+    <a href="#book/2/">Book2</a><br />
+    <a href="#book/3/note/1/">Note1</a><br />
+    <a href="#book/3/note/2/">Note2</a><br />
+    <hr />
+    <h3>Query strings</h3>
+    <a href="#test/?framework=qunit">Test</a><br />
+    <a href="#book/1/?title=HelpMe">Book1</a><br />
+    <a href="#book/3/note/1/?body=LOL">Note1</a><br />
+    <hr />
+    <h3>Output</h3>
+    <div id="result"></div>
+  </body>
+</html>
