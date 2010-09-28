@@ -33,7 +33,14 @@ $.extend(Route.prototype, {
      */
     init: function(route, target, name, static) {
         this.route = route.replace('\\:', ':');
-        this.target = target;
+        if ($.isArray(target)) {
+            this.target = target;
+        } else if (!target) {
+            this.target = [];
+        } else {
+            this.target = [target];
+        }
+
         this.name = name;
         this.realroute = static ? route.replace(':', '\\:') : route;
         this.tokens = this.realroute.split(this.syntax);
