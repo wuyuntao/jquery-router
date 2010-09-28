@@ -221,4 +221,59 @@ $.extend(Router.prototype, {
     }
 });
 
+var History = function(router) {
+    this.init(router);
+};
+
+$.extend(History.prototype, {
+
+    interval: 100,
+
+    init: function(router) {
+        this.state = this.get();
+        this.router = router;
+        this.timer = setInterval(this.check, this.interval);
+        var request = this.request(this.state);
+        var match = this.router.match(request.path);
+        if (match[0]) {
+        }
+    },
+
+    get: function() {
+    },
+
+    put: function() {
+    },
+
+    check: function() {
+        var current = this.get();
+        if (current != this.state) {
+            this.state = current;
+        }
+    },
+
+    request: function(uri) {
+        var tokens = uri.split('?', 2);
+        return {path: tokens[0], params: $.values(tokens[1])};
+
+    }
+});
+
+$.values = function (value) {
+    // Object that holds values.
+    var params = [],
+        // Get query string pieces (separated by &)
+        pieces = value.split('&'),
+
+    // Loop through query string pieces and assign params.
+    for (var i = 0, len = pieces.length, pair; i < len; ++i{
+        pair = pieces[i].split('=', 2);
+        // Repeated parameters with the same name are overwritten. Parameters
+        // with no value get set to boolean true.
+        params.push(pair.length == 2 ? decodeURIComponent(pair[1].replace(/\+/g, ' ')) : true);
+    }
+
+    return params;
+};
+
 // })(jQuery);
