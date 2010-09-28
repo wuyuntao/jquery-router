@@ -42,8 +42,10 @@ var router = new Router(),
     },
     reset = function() {
         router = new Router();
+    },
+    build = function() {
+        return router.build.apply(router, arguments);
     };
-
 
 test("Basic", function() {
     add('/static/', 'static');
@@ -100,6 +102,9 @@ test("Error in pattern", function() {
 });
 
 test("Build", function() {
+    add('/:test/:name#[a-z]+#/', 'handler', {name: 'testroute'})
+    add('/anon/:#.#', 'handler', {name: 'anonroute'})
+    equals(build('testroute', {test: 'hello', name: 'world'}), '/hello/world/');
 });
 
 })();

@@ -8,7 +8,7 @@
  *
  */
 
-(function($) {
+// (function($) {
 
 /**
  * Represents a single route and can parse the dynamic route syntax
@@ -113,6 +113,7 @@ $.extend(Router.prototype, {
         if (known) return known;
         this.routes.push(route);
         this.reset();
+        if (options.compile) this.compile();
         return route;
     },
 
@@ -168,7 +169,23 @@ $.extend(Router.prototype, {
     /**
      * Build an URI out of a named route and values for the wildcards.
      */
-    build: function(name, args) {
+    build: function(name, options) {
+        if (name in this.named) {
+            return this.format(this.named[name], options);
+        } else {
+            // Late check to reduce overhead on hits
+            if (!this.compiled) {
+                // Compile and try again.
+                this.compile();
+                return this.build(name, options);
+            }
+        }
+    },
+
+    format: function(template, options) {
+        for (var key in options)
+            template = template.replace('#{' + key + '}', options[key]);
+        return template;
     },
 
     /**
@@ -197,4 +214,4 @@ $.extend(Router.prototype, {
     }
 });
 
-})(jQuery);
+// })(jQuery);
