@@ -107,4 +107,7 @@ test("Build", function() {
     equals(build('testroute', {test: 'hello', name: 'world'}), '/hello/world/');
 });
 
+module("Observer");
+
+
 })();

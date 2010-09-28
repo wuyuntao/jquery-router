@@ -221,58 +221,78 @@ $.extend(Router.prototype, {
     }
 });
 
-var History = function(router) {
+var Observer = function(router) {
     this.init(router);
 };
 
-$.extend(History.prototype, {
-
+$.extend(Observer.prototype, {
     interval: 100,
 
     init: function(router) {
+        this.router = router || new Router();
         this.state = this.get();
-        this.router = router;
+        this.callback(this.state);
         this.timer = setInterval(this.check, this.interval);
-        var request = this.request(this.state);
-        var match = this.router.match(request.path);
-        if (match[0]) {
-        }
     },
 
     get: function() {
+        return decodeURIComponent(window.location.hash.replace(/^#/, ''));
     },
 
-    put: function() {
+    set: function(hash) {
+        window.location.hash = encodeURIComponent(hash);
     },
 
     check: function() {
         var current = this.get();
         if (current != this.state) {
+            this.callback(current);
             this.state = current;
         }
     },
 
-    request: function(uri) {
-        var tokens = uri.split('?', 2);
-        return {path: tokens[0], params: $.values(tokens[1])};
+    callback: function(uri) {
+        var request = this.request(uri),
+            match = this.router.match(request.path);
+        if (match[0] && !$.isEmptyObject(match[0])) {
+            for (var i = 0, len = match[0].length; i < len; ++i) {
+                if ($.isFunction(match[0][i])) {
+                    match[0][i].apply(request, match[1]);
+                }
+            }
+        }
+    },
 
-    }
+    request: function(uri) {
+        var pieces = uri.split('?', 2);
+        return {
+            path: pieces[0],
+            params: $.unparam(pieces[1] || "")
+        };
+
+    },
+
+    reset: function() {
+        this.router = new Router;
+        if (this.timer) clearInterval(this.timer);
+        this.timer = null;
+    },
 });
 
-$.values = function (value) {
-    // Object that holds values.
-    var params = [],
+$.unparam = function (value) {
+    // Object that holds names => values.
+    var params = {},
         // Get query string pieces (separated by &)
-        pieces = value.split('&'),
+        pieces = value.split('&');
 
     // Loop through query string pieces and assign params.
-    for (var i = 0, len = pieces.length, pair; i < len; ++i{
+    for (var i = 0, len = pieces.length, pair; i < len; ++i) {
         pair = pieces[i].split('=', 2);
         // Repeated parameters with the same name are overwritten. Parameters
         // with no value get set to boolean true.
-        params.push(pair.length == 2 ? decodeURIComponent(pair[1].replace(/\+/g, ' ')) : true);
+        params[decodeURIComponent(pair[0])] = (pair.length == 2 ?
+            decodeURIComponent(pair[1].replace(/\+/g, ' ')) : true);
     }
-
     return params;
 };
 
