@@ -8,21 +8,8 @@
     <script type="text/javascript">
       $(function() {
         var result = $('#result');
-        $.route(/^test\/$/).get(function(request) {
-          result.text('test: ' + $.print(request.params));
-        });
-        $.route(/^settings\/$/).get(function(request) {
-          result.text('settings: ' + $.print(request.params));
-        });
-        $.route(/^quit\/$/).get(function(request) {
-          result.text('quit: ' + $.print(request.params));
-        });
-        $.route(/^book\/(.*)\/note\/(.*)$/).get(function(request, book_id) {
-          result.text('book id: ' + book_id + ': ' + $.print(request.params));
-        });
-        $.route(/^book\/(.*)\/$/).get(function(request, book_id, note_id) {
-          result.text('book id: ' + book_id + '; note id: ' + note_id + '; params: ' + $.print(request.params));
-        });
+
+        // Print a hash
         $.print = function(dict) {
           var str = '{ ';
           for (var key in dict) {
@@ -31,12 +18,42 @@
           str += '}';
           return str;
         }
+
+        // Setup routes
+        $.router.route("test/")
+            .get(function() {
+                result.text('test: ' + $.print(this.params));
+            }).end()
+
+            .route("settings/")
+            .get(function() {
+                result.text('settings: ' + $.print(this.params));
+            }).end()
+
+            .route("quit/")
+            .get(function() {
+                result.text('quit: ' + $.print(this.params));
+            }).end()
+
+            .route("book/:book_id/")
+            .get(function(book_id) {
+                result.text('book ' + book_id + ':  ' + $.print(this.params));
+            }).end()
+
+            .route("book/:book_id#[0-9]+#/note/:note_id#[0-9]+#/")
+            .get(function(book_id, note_id) {
+                result.text('book ' + book_id + ' note ' + note_id + ': ' + $.print(this.params));
+            }).end();
+
+        // Run router
+        $.router.run();
+
       })
     </script>
   </head>
   <body>
     <h3>Static paths</h3>
-    <a href="#test/">Test</a><br />
+    <a href="#test/?redirect">Test</a><br />
     <a href="#settings/">Settings</a><br />
     <a href="#quit/">Quit</a><br />
     <hr />
