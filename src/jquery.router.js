@@ -22,7 +22,7 @@ $.extend(Route.prototype, {
     // syntax: /(?<!\\):([a-zA-Z_]+)?(?:#(.*?)#)?/i,
     syntax: /:([a-zA-Z_]+)?(?:#(.*?)#)?/i,
 
-    default: '[^/]+',
+    base: '[^/]+',
 
     /**
      * Create a Route.
@@ -34,11 +34,11 @@ $.extend(Route.prototype, {
     init: function(route, target, name, static, router) {
         this.route = route.replace('\\:', ':');
         if ($.isArray(target)) {
-            this.target = target;
+            this.targets = target;
         } else if (!target) {
-            this.target = [];
+            this.targets = [];
         } else {
-            this.target = [target];
+            this.targets = [target];
         }
 
         this.name = name;
@@ -51,7 +51,7 @@ $.extend(Route.prototype, {
      * Append a (named) target
      */
     get: function(target) {
-        this.target.push(target);
+        this.targets.push(target);
         return this;
     },
 
@@ -73,7 +73,7 @@ $.extend(Route.prototype, {
             } else if (i % 3 == 1) {
                 out += '(';   // Javascript does not support named groups
             } else {
-                out += (part || this.default) + ')';
+                out += (part || this.base) + ')';
             }
         }, this));
         return out;
@@ -222,11 +222,11 @@ $.extend(Router.prototype, {
                 this.named[route.name] = route.format();
             }
             if (route.static()) {
-                this.static[route.route] = route.target;
+                this.static[route.route] = route.targets;
                 continue;
             }
             var regexp = new RegExp('^' + route.group() + '$', 'i');
-            this.dynamic.push([regexp, route.target]);
+            this.dynamic.push([regexp, route.targets]);
         }
         this.dynamic.reverse();
         this.compiled = true;
