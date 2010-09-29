@@ -237,6 +237,9 @@ $.extend(Router.prototype, {
     }
 });
 
+/**
+ * An observer reacts to changes of location hash
+ */
 var Observer = function(router, stop) {
     this.init(router, stop);
 };
@@ -310,6 +313,9 @@ $.extend(Observer.prototype, {
     },
 });
 
+/**
+ * Helpers
+ */
 $.unparam = function (value) {
     if (!value) return {};
     // Object that holds names => values.
@@ -328,7 +334,9 @@ $.unparam = function (value) {
     return params;
 };
 
-// Router instance
+/**
+ * Public interfaces
+ */
 $.router = new Router();
 
 $.router.route = function(route, options) {
