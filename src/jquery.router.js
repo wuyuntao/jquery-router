@@ -265,7 +265,8 @@ $.extend(Observer.prototype, {
     },
 
     set: function(hash) {
-        window.location.hash = hash;
+        // IE will recognize strings following a question mark as real query string
+        window.location.hash = $.browser.msie && $.browser.version <= 6 ? hash.replace('?', '%3F') : hash;
     },
 
     start: function() {
@@ -310,7 +311,7 @@ $.extend(Observer.prototype, {
         this.router = new Router;
         if (this.timer) clearInterval(this.timer);
         this.timer = null;
-    },
+    }
 });
 
 /**
@@ -338,13 +339,18 @@ $.unparam = function (value) {
  * Public interfaces
  */
 $.router = new Router();
+$.router.observer = new Observer($.router, true);
 
 $.router.route = function(route, options) {
     return $.router.add(route, null, options);
 };
 
 $.router.run = function() {
-    return new Observer($.router);
+    $.router.observer.start();
+};
+
+$.router.load = function(hash) {
+    $.router.observer.set(hash);
 };
 
 // })(jQuery);
