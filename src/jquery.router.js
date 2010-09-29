@@ -13,8 +13,8 @@
 /**
  * Represents a single route and can parse the dynamic route syntax
  */
-var Route = function(route, target, name, static) {
-    this.init(route, target, name, static);
+var Route = function(route, target, name, static, router) {
+    this.init(route, target, name, static, router);
 };
 
 $.extend(Route.prototype, {
@@ -31,7 +31,7 @@ $.extend(Route.prototype, {
      * in front of the `:` and are completely ignored if static is true.
      * A name may be used to refer to this route later (depends on Router)
      */
-    init: function(route, target, name, static) {
+    init: function(route, target, name, static, router) {
         this.route = route.replace('\\:', ':');
         if ($.isArray(target)) {
             this.target = target;
@@ -44,6 +44,22 @@ $.extend(Route.prototype, {
         this.name = name;
         this.realroute = static ? route.replace(':', '\\:') : route;
         this.tokens = this.realroute.split(this.syntax);
+        this.router = router;
+    },
+
+    /**
+     * Append a (named) target
+     */
+    get: function(target) {
+        this.target.push(target);
+        return this;
+    },
+
+    /**
+     * Return the router
+     */
+    end: function() {
+        return this.router;
     },
 
     /**
@@ -114,7 +130,7 @@ $.extend(Router.prototype, {
     add: function(route, target, options) {
         options = options || {};
         if (typeof route == 'string') {
-            route = new Route(route, target, options.name, options.static);
+            route = new Route(route, target, options.name, options.static, this);
         }
         var known = this.get(route);
         if (known) return known;
@@ -236,11 +252,17 @@ $.extend(Observer.prototype, {
     },
 
     get: function() {
-        return decodeURIComponent(window.location.hash.replace(/^#/, ''));
+        var hash = window.location.hash.replace(/^#/, '');
+        try {
+            return $.browser.mozilla ? hash : decodeURIComponent(hash);
+        }
+        catch (error) {
+            return hash;
+        }
     },
 
     set: function(hash) {
-        window.location.hash = encodeURIComponent(hash);
+        window.location.hash = hash;
     },
 
     start: function() {
@@ -289,6 +311,7 @@ $.extend(Observer.prototype, {
 });
 
 $.unparam = function (value) {
+    if (!value) return {};
     // Object that holds names => values.
     var params = {},
         // Get query string pieces (separated by &)
@@ -303,6 +326,17 @@ $.unparam = function (value) {
             decodeURIComponent(pair[1].replace(/\+/g, ' ')) : true);
     }
     return params;
+};
+
+// Router instance
+$.router = new Router();
+
+$.router.route = function(route, options) {
+    return $.router.add(route, null, options);
+};
+
+$.router.run = function() {
+    return new Observer($.router);
 };
 
 // })(jQuery);

@@ -117,10 +117,10 @@ module("Observer");
 
 test("Location", function() {
     reset();
-    observer.set("location");
-    equals(window.location.hash, "#location");
+    observer.set("/location/");
+    equals(window.location.hash, "#/location/");
 
-    equals(observer.get(), "location");
+    equals(observer.get(), "/location/");
 });
 
 test("Request", function() {
@@ -131,12 +131,12 @@ test("Request", function() {
     equals(request.params.v, "1");
 });
 
-test("callback", function() {
+test("Callback", function() {
     var book = null;
     reset();
 
-    stop();
-    add("/book/:id/?v=2", function(id) {
+    stop(1000);
+    add("/book/:id/", function(id) {
         book = id;
         equals(book, id);
 
@@ -146,7 +146,14 @@ test("callback", function() {
         start();
     });
     observer.start();
-    observer.set("/book/3/");
+    observer.set("/book/3/?v=2");
+});
+
+module("Helper")
+
+test("Unparam", function() {
+    var hash = $.unparam("");
+    ok($.isEmptyObject(hash));
 });
 
 })();
