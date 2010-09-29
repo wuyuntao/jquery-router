@@ -32,7 +32,7 @@ test("Dynamic with Regex", function() {
 
 module("Router");
 
-var router = new Router(),
+var router, observer, request,
     add = function() {
         router.add.apply(router, arguments);
         router.compile();
@@ -42,12 +42,15 @@ var router = new Router(),
     },
     reset = function() {
         router = new Router();
+        observer = new Observer(router);
     },
     build = function() {
         return router.build.apply(router, arguments);
     };
 
 test("Basic", function() {
+    reset();
+
     add('/static/', 'static');
     equals(match('/static/')[0], 'static');
     ok($.isEmptyObject(match('/static/')[1]));
@@ -77,6 +80,9 @@ test("Basic", function() {
 });
 
 test("Parentheses", function() {
+    // Will match `notail` if router is not reset
+    reset();
+
     add('/func(:param)', 'func');
     equals(match('/func(foo)')[0], 'func')
     equals(match('/func(foo)')[1][0], 'foo');
@@ -87,8 +93,6 @@ test("Parentheses", function() {
     equals(match('/func2(bar)')[0], 'func2');
     equals(match('/func2(bar)')[1][0], 'bar');
 
-    // Will match `notail` if router is not reset
-    reset();
     ok(!match('/func2(baz)')[0]);
     ok($.isEmptyObject(match('/func2(baz)')[1]));
 
@@ -102,6 +106,8 @@ test("Error in pattern", function() {
 });
 
 test("Build", function() {
+    reset();
+
     add('/:test/:name#[a-z]+#/', 'handler', {name: 'testroute'})
     add('/anon/:#.#', 'handler', {name: 'anonroute'})
     equals(build('testroute', {test: 'hello', name: 'world'}), '/hello/world/');
@@ -109,5 +115,38 @@ test("Build", function() {
 
 module("Observer");
 
+test("Location", function() {
+    reset();
+    observer.set("location");
+    equals(window.location.hash, "#location");
+
+    equals(observer.get(), "location");
+});
+
+test("Request", function() {
+    reset();
+    request = observer.request("/test?redirect&v=1");
+    equals(request.path, "/test");
+    equals(request.params.redirect, true);
+    equals(request.params.v, "1");
+});
+
+test("callback", function() {
+    var book = null;
+    reset();
+
+    stop();
+    add("/book/:id/?v=2", function(id) {
+        book = id;
+        equals(book, id);
+
+        // Request
+        equals(this.path, "/book/3/");
+        equals(this.params.v, "2");
+        start();
+    });
+    observer.start();
+    observer.set("/book/3/");
+});
 
 })();

@@ -221,18 +221,18 @@ $.extend(Router.prototype, {
     }
 });
 
-var Observer = function(router) {
-    this.init(router);
+var Observer = function(router, stop) {
+    this.init(router, stop);
 };
 
 $.extend(Observer.prototype, {
     interval: 100,
 
-    init: function(router) {
+    init: function(router, stop) {
         this.router = router || new Router();
         this.state = this.get();
         this.callback(this.state);
-        this.timer = setInterval(this.check, this.interval);
+        if (!stop) this.start();
     },
 
     get: function() {
@@ -241,6 +241,15 @@ $.extend(Observer.prototype, {
 
     set: function(hash) {
         window.location.hash = encodeURIComponent(hash);
+    },
+
+    start: function() {
+        this.stop();
+        this.timer = setInterval($.proxy(this.check, this), this.interval);
+    },
+
+    stop: function() {
+        if (this.timer) clearInterval(this.timer);
     },
 
     check: function() {
