@@ -47,7 +47,7 @@
             callback: callback,
             async: async
         };
-        if (route.template && !routeExists(route)) {
+        if (!routeExists(route)) {
             routes.push(route);
             compiled = false;
         }

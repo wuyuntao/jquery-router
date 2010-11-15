@@ -5,6 +5,7 @@
     <title>jQuery Router Demos</title>
     <script type="text/javascript" src="../tests/jquery.js"></script>
     <script type="text/javascript" src="../lib/cbsplit.js"></script>
+    <script type="text/javascript" src="../lib/jquery.ba-hashchange.js"></script>
     <script type="text/javascript" src="../src/jquery.router.js"></script>
     <script type="text/javascript">
       $(function() {
@@ -12,42 +13,37 @@
 
         // Print a hash
         $.print = function(dict) {
-          var str = '{ ';
-          for (var key in dict) {
-            str += '"' + key + '": "' + dict[key] + '", ';
-          }
-          str += '}';
-          return str;
+            return JSON.stringify(dict);
         }
 
         // Setup routes
-        $.router.route("test/")
-            .get(function() {
-                result.text('test: ' + $.print(this.params));
-            }).end()
+        result
+            .route('test/', function(request) {
+                return 'test: ' + $.print(request.params);
+            }).route('settings/', function(request) {
+                return 'settings: ' + $.print(request.params);
+            }).route('quit/', function(request) {
+                return 'quit: ' + $.print(request.params);
+            }).route('book/:id/', function(request, id) {
+                return 'book ' + id + ': ' + $.print(request.params);
+            }).route('book/:id/note/:noteId#[0-9]+#/', function(request, id, noteId) {
+                return 'book ' + id + ', note ' + noteId + ': ' + $.print(request.params);
+            });
 
-            .route("settings/")
-            .get(function() {
-                result.text('settings: ' + $.print(this.params));
-            }).end()
-
-            .route("quit/")
-            .get(function() {
-                result.text('quit: ' + $.print(this.params));
-            }).end()
-
-            .route("book/:book_id/")
-            .get(function(book_id) {
-                result.text('book ' + book_id + ':  ' + $.print(this.params));
-            }).end()
-
-            .route("book/:book_id#[0-9]+#/note/:note_id#[0-9]+#/")
-            .get(function(book_id, note_id) {
-                result.text('book ' + book_id + ' note ' + note_id + ': ' + $.print(this.params));
-            }).end();
-
-        // Run router
-        $.router.run();
+        // Bind hashchange event
+        $(window).bind('hashchange', function(e, triggered) {
+            var hash = location.hash.replace(/^#/, '');
+            if (hash) {
+                var match = $.routeMatches(hash);
+                if (match) {
+                    var template = $(match.route.template);
+                    if (template.length) {
+                        var text = match.route.callback.apply(match.route.callback, match.args);
+                        template.text(text);
+                    }
+                }
+            }
+        });
 
       })
     </script>
